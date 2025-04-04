@@ -1,0 +1,133 @@
+project_name: Chainloop
+env:
+  - CGO_ENABLED=0
+  - COMMON_LDFLAGS=-s -w
+report_sizes: true
+builds:
+  - binary: control-plane
+    id: control-plane
+    main: ./app/controlplane/cmd
+    ldflags:
+      - "{{ .Env.COMMON_LDFLAGS }}"
+      - -X github.com/chainloop-dev/chainloop/app/controlplane/internal/server.Version={{ .Version }}
+      - -X main.Version={{ .Version }}
+    targets:
+      - linux_amd64
+  - binary: artifact-cas
+    id: artifact-cas
+    main: ./app/artifact-cas/cmd
+    ldflags:
+      - "{{ .Env.COMMON_LDFLAGS }}"
+      - -X github.com/chainloop-dev/chainloop/app/artifact-cas/internal/server.Version={{ .Version }}
+      - -X main.Version={{ .Version }}
+    targets:
+      - linux_amd64
+  - binary: chainloop-darwin-amd64
+    id: cli-darwin-amd64
+    no_unique_dist_dir: true
+    main: ./app/cli
+    ldflags:
+      - "{{ .Env.COMMON_LDFLAGS }}"
+      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
+    goos:
+      - darwin
+    goarch:
+      - amd64
+  - binary: chainloop-darwin-arm64
+    id: cli-darwin-arm64
+    no_unique_dist_dir: true
+    main: ./app/cli
+    ldflags:
+      - "{{ .Env.COMMON_LDFLAGS }}"
+      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
+    goos:
+      - darwin
+    goarch:
+      - arm64
+  - binary: chainloop-linux-amd64
+    id: cli-linux-amd64
+    no_unique_dist_dir: true
+    main: ./app/cli
+    ldflags:
+      - "{{ .Env.COMMON_LDFLAGS }}"
+      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
+    goos:
+      - linux
+    goarch:
+      - amd64
+  - binary: chainloop-linux-arm64
+    id: cli-linux-arm64
+    no_unique_dist_dir: true
+    main: ./app/cli
+    ldflags:
+      - "{{ .Env.COMMON_LDFLAGS }}"
+      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
+    goos:
+      - linux
+    goarch:
+      - arm64
+  # Plugins build
+  # NOTE: On the event of a new plugin added to the project you need to
+  # 1 - Add the plugins binary to be built in this section
+  # 2 - Add the plugin ID to the allow-list in the dockers.IDs section
+  # 3 - Update the Dockerfile.goreleaser
+  - binary: chainloop-plugin-discord-webhook
+    id: chainloop-plugin-discord-webhook
+    main: ./app/controlplane/plugins/core/discord-webhook/v1/cmd
+    targets:
+      - linux_amd64
+    ldflags: ["{{ .Env.COMMON_LDFLAGS }}"]
+  - binary: chainloop-plugin-smtp
+    id: chainloop-plugin-smtp
+    main: ./app/controlplane/plugins/core/smtp/v1/cmd
+    targets:
+      - linux_amd64
+    ldflags: ["{{ .Env.COMMON_LDFLAGS }}"]
+  - binary: chainloop-plugin-dependency-track
+    id: chainloop-plugin-dependency-track
+    main: ./app/controlplane/plugins/core/dependency-track/v1/cmd
+    targets:
+      - linux_amd64
+archives:
+  - builds:
+      - cli-darwin-amd64
+      - cli-darwin-arm64
+      - cli-linux-amd64
+      - cli-linux-arm64
+    name_template: "chainloop-cli-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
+    # Override default to not to include the readme nor license file
+    files:
+      - none*
+  - format: binary
+    id: binary
+    name_template: "{{ .Binary }}"
+    allow_different_binary_count: true
+
+checksum:
+  name_template: "checksums.txt"
+
+# Build multiplatform images https://goreleaser.com/cookbooks/multi-platform-docker-images/
+dockers:
+  # CLI
+  - dockerfile: app/cli/Dockerfile.goreleaser
+    ids:
+      - cli-linux-amd64
+    image_templates:
+      - "ghcr.io/javirln/goreleaser/cli:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--build-arg=TARGETOS=linux"
+      - "--build-arg=TARGETARCH=amd64"
+      - "--platform=linux/amd64"
+  - dockerfile: app/cli/Dockerfile.goreleaser
+    ids:
+      - cli-linux-arm64
+    image_templates:
+      - "ghcr.io/javirln-dev/goreleaser/cli:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--build-arg=TARGETOS=linux"
+      - "--build-arg=TARGETARCH=arm64"
+      - "--platform=linux/arm64"

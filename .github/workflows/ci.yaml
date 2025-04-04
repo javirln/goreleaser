@@ -20,6 +20,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: chainloop-dev/chainloop
+        ref: bb1159cc3b96f85f705770c9597377822d6bbb6b
         path: chainloop
         fetch-depth: 0
 

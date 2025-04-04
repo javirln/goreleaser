@@ -5,6 +5,11 @@ on:
     branches:
       - main
 
+
+permissions:
+  contents: write # required for goreleaser to upload the release assets
+  packages: write # to push container images
+  
 jobs:
   the_build:
     runs-on: ubuntu-latest
@@ -34,7 +39,7 @@ jobs:
     - name: Build Chainloop Windows CLI
       uses: goreleaser/goreleaser-action@b508e2e3ef3b19d4e4146d4f8fb3ba9db644a757 # v3.2.0
       with:
-        args: release --clean --config ../base-repo/.goreleaser.yaml
+        args: build --clean --config ../base-repo/.goreleaser.yaml --snapshot
         workdir: chainloop
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

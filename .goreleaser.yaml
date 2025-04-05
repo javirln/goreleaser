@@ -26,50 +26,18 @@ builds:
       - -X main.Version={{ .Version }}
     targets:
       - linux_amd64
-  - binary: chainloop-darwin-amd64
-    id: cli-darwin-amd64
+  - binary: chainloop-{{ .Os }}-{{ .Arch }}
+    id: cli
     no_unique_dist_dir: true
     main: ./app/cli
     ldflags:
       - "{{ .Env.COMMON_LDFLAGS }}"
       - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
-    goos:
-      - darwin
-    goarch:
-      - amd64
-  - binary: chainloop-darwin-arm64
-    id: cli-darwin-arm64
-    no_unique_dist_dir: true
-    main: ./app/cli
-    ldflags:
-      - "{{ .Env.COMMON_LDFLAGS }}"
-      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
-    goos:
-      - darwin
-    goarch:
-      - arm64
-  - binary: chainloop-linux-amd64
-    id: cli-linux-amd64
-    no_unique_dist_dir: true
-    main: ./app/cli
-    ldflags:
-      - "{{ .Env.COMMON_LDFLAGS }}"
-      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
-    goos:
-      - linux
-    goarch:
-      - amd64
-  - binary: chainloop-linux-arm64
-    id: cli-linux-arm64
-    no_unique_dist_dir: true
-    main: ./app/cli
-    ldflags:
-      - "{{ .Env.COMMON_LDFLAGS }}"
-      - -X github.com/chainloop-dev/chainloop/app/cli/cmd.Version={{ .Version }}
-    goos:
-      - linux
-    goarch:
-      - arm64
+    targets:
+      - darwin_amd64
+      - darwin_arm64
+      - linux_amd64
+      - linux_arm64
   # Plugins build
   # NOTE: On the event of a new plugin added to the project you need to
   # 1 - Add the plugins binary to be built in this section
@@ -94,10 +62,7 @@ builds:
       - linux_amd64
 archives:
   - builds:
-      - cli-darwin-amd64
-      - cli-darwin-arm64
-      - cli-linux-amd64
-      - cli-linux-arm64
+      - cli
     name_template: "chainloop-cli-{{ .Version }}-{{ .Os }}-{{ .Arch }}"
     # Override default to not to include the readme nor license file
     files:
@@ -110,28 +75,158 @@ archives:
 checksum:
   name_template: "checksums.txt"
 
+signs:
+  # COSIGN_PASSWORD is also required to be present
+  - cmd: cosign
+    args:
+      [
+        "sign-blob",
+        "--key=env://COSIGN_KEY",
+        "--output-signature=${signature}",
+        "--yes",
+        "${artifact}",
+      ]
+    artifacts: all
+
+docker_signs:
+  # COSIGN_PASSWORD is also required to be present
+  - cmd: cosign
+    args: ["sign", "--key=env://COSIGN_KEY", "--yes", "${artifact}"]
+    artifacts: all
+
 # Build multiplatform images https://goreleaser.com/cookbooks/multi-platform-docker-images/
 dockers:
+  # control-plane
+  - dockerfile: app/controlplane/Dockerfile.goreleaser
+    ids:
+      - control-plane
+      - chainloop-plugin-discord-webhook
+      - chainloop-plugin-smtp
+      - chainloop-plugin-dependency-track
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - dockerfile: app/controlplane/Dockerfile.goreleaser
+    ids:
+      - control-plane
+      - chainloop-plugin-discord-webhook
+      - chainloop-plugin-smtp
+      - chainloop-plugin-dependency-track
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+
+  # migrations: Container image meant to perform migrations on the database at deployment time
+  - dockerfile: app/controlplane/Dockerfile.migrations
+    extra_files:
+      - app/controlplane/pkg/data/ent/migrate/migrations
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - dockerfile: app/controlplane/Dockerfile.migrations
+    extra_files:
+      - app/controlplane/pkg/data/ent/migrate/migrations
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+
+  # cas
+  - dockerfile: app/artifact-cas/Dockerfile.goreleaser
+    ids:
+      - artifact-cas
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}-amd64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/amd64"
+  - dockerfile: app/artifact-cas/Dockerfile.goreleaser
+    ids:
+      - artifact-cas
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}-arm64"
+    use: buildx
+    build_flag_templates:
+      - "--pull"
+      - "--platform=linux/arm64"
+
   # CLI
   - dockerfile: app/cli/Dockerfile.goreleaser
     ids:
-      - cli-linux-amd64
+      - cli
     image_templates:
-      - "ghcr.io/javirln/goreleaser/cli:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-amd64"
     use: buildx
     build_flag_templates:
       - "--pull"
-      - "--build-arg=TARGETOS=linux"
       - "--build-arg=TARGETARCH=amd64"
+      - "--build-arg=TARGEOS=linux"
       - "--platform=linux/amd64"
   - dockerfile: app/cli/Dockerfile.goreleaser
     ids:
-      - cli-linux-arm64
+      - cli
     image_templates:
-      - "ghcr.io/javirln-dev/goreleaser/cli:{{ .Tag }}-arm64"
+      - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-arm64"
     use: buildx
     build_flag_templates:
       - "--pull"
-      - "--build-arg=TARGETOS=linux"
       - "--build-arg=TARGETARCH=arm64"
+      - "--build-arg=TARGEOS=linux"
       - "--platform=linux/arm64"
+
+docker_manifests:
+  # control-plane
+  - name_template: "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/chainloop-dev/chainloop/control-plane:latest"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/control-plane:{{ .Tag }}-arm64"
+
+  # artifact-cas
+  - name_template: "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/chainloop-dev/chainloop/artifact-cas:latest"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/artifact-cas:{{ .Tag }}-arm64"
+
+  # control-plane-migrations
+  - name_template: "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:latest"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/control-plane-migrations:{{ .Tag }}-arm64"
+
+  # cli
+  - name_template: "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-arm64"
+  - name_template: "ghcr.io/chainloop-dev/chainloop/cli:latest"
+    image_templates:
+      - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-amd64"
+      - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-arm64"
+
+release:
+  extra_files:
+    - glob: ./.github/workflows/cosign.pub

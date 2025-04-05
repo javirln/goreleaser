@@ -25,7 +25,6 @@ jobs:
       uses: actions/checkout@v4
       with:
         repository: chainloop-dev/chainloop
-        ref: bb1159cc3b96f85f705770c9597377822d6bbb6b
         path: chainloop
         fetch-depth: 0
 
@@ -39,7 +38,7 @@ jobs:
     - name: Build Chainloop Windows CLI
       uses: goreleaser/goreleaser-action@b508e2e3ef3b19d4e4146d4f8fb3ba9db644a757 # v3.2.0
       with:
-        args: build --clean --config ../base-repo/.goreleaser.yaml --snapshot
+        args: release --clean --config ../base-repo/.goreleaser.yaml --snapshot
         workdir: chainloop
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

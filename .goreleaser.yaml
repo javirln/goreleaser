@@ -2,10 +2,6 @@ project_name: Chainloop
 env:
   - CGO_ENABLED=0
   - COMMON_LDFLAGS=-s -w
-release:
-  github:
-    owner: javirln
-    name: goreleaser
 report_sizes: true
 builds:
   - binary: control-plane
@@ -228,5 +224,8 @@ docker_manifests:
       - "ghcr.io/chainloop-dev/chainloop/cli:{{ .Tag }}-arm64"
 
 release:
+  github:
+      owner: javirln
+      name: goreleaser
   extra_files:
     - glob: ./.github/workflows/cosign.pub

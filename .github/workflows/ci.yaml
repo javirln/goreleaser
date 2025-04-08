@@ -31,4 +31,4 @@ jobs:
         with:
           subject-name: index.docker.io/bitnami/wordpress
           subject-digest: "sha256:8881c1a89650c9fa9d06fee4ff6fb898cf931c4255663ce801d4474549a60fc1"
-          push-to-registry: true
+          push-to-registry: false

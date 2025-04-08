@@ -27,8 +27,14 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Attest
         uses: actions/attest-build-provenance@v2
-        id: attest
         with:
           subject-name: index.docker.io/bitnami/wordpress
           subject-digest: "sha256:8881c1a89650c9fa9d06fee4ff6fb898cf931c4255663ce801d4474549a60fc1"
+          push-to-registry: false
+
+      - name: Attest 2
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: index.docker.io/bitnami/nats
+          subject-digest: "sha256:b35cac45090f87b8be132aa2aaa02db65c498a85b79a420f261d0a502792bc04"
           push-to-registry: false

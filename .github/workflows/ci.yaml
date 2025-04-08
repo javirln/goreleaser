@@ -53,7 +53,7 @@ jobs:
           echo "c6609b90d447055b882c84b52b92550a5b1acd0da5a37013ad843ad5f19ebe56  ghcr.io/chainloop-dev/platform/backend" >> container-images-checksum.txt
           echo "792b3b345a72d66e3e32621ec96806ffd590434ee65c531e63159ff734f196d8  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
           echo "792b3b345a72d66e3e32621ec96806ffd590434ee65c531e63159ff734f196d8  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
-          echo "0721a5cfc888f77384c50316859461bd3eef4778364689fbfce90615a47bb56  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
+          echo "0721a5cfc888f77384c50316859461bd3eef4778364689fbfce90615a47bb56a  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
           echo "792b3b345a72d66e3e32621ec96806ffd590434ee65c531e63159ff734f196d8  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
 
       - uses: actions/attest-build-provenance@v2

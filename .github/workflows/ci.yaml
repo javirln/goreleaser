@@ -48,14 +48,8 @@ jobs:
         run: |
           # Define the list of container images
           images=(
-          "${{ env.IMAGE_NAME }}:$customTAG"
-          "${{ env.IMAGE_NAME }}:$GITHUB_SHA-amd64"
-          "${{ env.IMAGE_NAME }}:$GITHUB_SHA-arm64"
           "${{ env.IMAGE_NAME }}:latest-dev"
           "${{ env.IMAGE_NAME }}:latest-dev-fips"
-          "${{ env.MIGRATION_IMAGE_NAME }}:$customTAG"
-          "${{ env.MIGRATION_IMAGE_NAME }}:$GITHUB_SHA-amd64"
-          "${{ env.MIGRATION_IMAGE_NAME }}:$GITHUB_SHA-arm64"
           "${{ env.MIGRATION_IMAGE_NAME }}:latest-dev"
           )
 

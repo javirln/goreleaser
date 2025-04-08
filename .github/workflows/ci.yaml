@@ -1,46 +1,34 @@
-name: Test goreleaser
+name: build-attested-image
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
 
-
-permissions:
-  contents: write # required for goreleaser to upload the release assets
-  packages: write # to push container images
-  
 jobs:
-  the_build:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+      contents: read
+      attestations: write
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+
     steps:
-
-    - name: Checkout Goreleaser Base Repository
-      uses: actions/checkout@v4
-      with:
-        repository: javirln/goreleaser
-        path: base-repo
-
-    - name: Checkout Chainloop Open Source Repository
-      uses: actions/checkout@v4
-      with:
-        repository: javirln/chainloop
-        ref: feat/pfm-2843-goreleaser
-        path: chainloop
-        fetch-depth: 0
-
-    - name: ls
-      run: ls -la
-
-    - name: Setup qemu
-      id: qemu
-      uses: docker/setup-qemu-action@53851d14592bedcffcf25ea515637cff71ef929a # v3.3.0
-
-    - name: Build Chainloop Windows CLI
-      uses: goreleaser/goreleaser-action@b508e2e3ef3b19d4e4146d4f8fb3ba9db644a757 # v3.2.0
-      with:
-        args: release --skip=sign --clean --config ../base-repo/.goreleaser.yaml --snapshot
-        workdir: chainloop
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Attest
+        uses: actions/attest-build-provenance@v2
+        id: attest
+        with:
+          subject-name: index.docker.io/bitnami/wordpress
+          subject-digest: "sha256:8881c1a89650c9fa9d06fee4ff6fb898cf931c4255663ce801d4474549a60fc1"
+          push-to-registry: true

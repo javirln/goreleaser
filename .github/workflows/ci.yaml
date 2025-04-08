@@ -65,6 +65,7 @@ jobs:
 
           # Loop through each image, inspect it, and extract the RepoDigest
           for image in "${images[@]}"; do
+            docker pull "$image"
             repo_digest=$(docker image inspect --format='{{index .RepoDigests 0}}' "$image" | awk -F'sha256:' '{print $2}')
             trimmed_image=$(echo "$image" | awk -F':' '{print $1}')
             echo "$repo_digest  $trimmed_image" >> $checksum_file

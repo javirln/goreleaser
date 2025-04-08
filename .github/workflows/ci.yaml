@@ -28,8 +28,8 @@ jobs:
 
       - name: Create checksum file
         run: |
-          echo "sha256:8881c1a89650c9fa9d06fee4ff6fb898cf931c4255663ce801d4474549a60fc1 index.docker.io/bitnami/wordpress" > sha256.txt
-          echo "sha256:b35cac45090f87b8be132aa2aaa02db65c498a85b79a420f261d0a502792bc04 index.docker.io/bitnami/nats" >> sha256.txt
+          echo "8881c1a89650c9fa9d06fee4ff6fb898cf931c4255663ce801d4474549a60fc1 index.docker.io/bitnami/wordpress" > sha256.txt
+          echo "b35cac45090f87b8be132aa2aaa02db65c498a85b79a420f261d0a502792bc04 index.docker.io/bitnami/nats" >> sha256.txt
 
       - name: Attest
         uses: actions/attest-build-provenance@v2

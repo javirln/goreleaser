@@ -67,3 +67,7 @@ jobs:
       - uses: actions/attest-build-provenance@v2
         with:
           subject-checksums: container-images-checksum.txt
+
+      - name: Cat checksum
+        run: |
+          cat container-images-checksum.txt

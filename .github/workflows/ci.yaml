@@ -48,9 +48,8 @@ jobs:
         run: |
           # Define the list of container images
           images=(
-          "${{ env.IMAGE_NAME }}:latest-dev"
-          "${{ env.IMAGE_NAME }}:latest-dev-fips"
-          "${{ env.MIGRATION_IMAGE_NAME }}:latest-dev"
+          "index.docker.io/bitnami/wordpress"
+          "index.docker.io/bitnami/nats"
           )
 
           # Create an empty checksum file

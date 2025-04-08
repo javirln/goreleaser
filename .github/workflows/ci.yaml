@@ -14,7 +14,8 @@ jobs:
       attestations: write
     env:
       REGISTRY: ghcr.io
-      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_NAME: ghcr.io/chainloop-dev/platform/backend
+      MIGRATION_IMAGE_NAME: ghcr.io/chainloop-dev/platform/backend-migrations
 
     steps:
       - name: Checkout
@@ -41,3 +42,34 @@ jobs:
       - name: Cat attestation
         run: |
           cat ${{ steps.slsa-attest.outputs.bundle-path }}
+
+
+      - name: Generate Container image checksum file for SLSA attestation
+        run: |
+          # Define the list of container images
+          images=(
+          "${{ env.IMAGE_NAME }}:$customTAG"
+          "${{ env.IMAGE_NAME }}:$GITHUB_SHA-amd64"
+          "${{ env.IMAGE_NAME }}:$GITHUB_SHA-arm64"
+          "${{ env.IMAGE_NAME }}:latest-dev"
+          "${{ env.IMAGE_NAME }}:latest-dev-fips"
+          "${{ env.MIGRATION_IMAGE_NAME }}:$customTAG"
+          "${{ env.MIGRATION_IMAGE_NAME }}:$GITHUB_SHA-amd64"
+          "${{ env.MIGRATION_IMAGE_NAME }}:$GITHUB_SHA-arm64"
+          "${{ env.MIGRATION_IMAGE_NAME }}:latest-dev"
+          )
+
+          # Create an empty checksum file
+          checksum_file="container-images-checksum.txt"
+          touch "$checksum_file"
+
+          # Loop through each image, inspect it, and extract the RepoDigest
+          for image in "${images[@]}"; do
+            repo_digest=$(docker image inspect --format='{{index .RepoDigests 0}}' "$image" | awk -F'sha256:' '{print $2}')
+            trimmed_image=$(echo "$image" | awk -F':' '{print $1}')
+            echo "$repo_digest  $trimmed_image" >> $checksum_file
+          done
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-checksums: container-images-checksum.txt

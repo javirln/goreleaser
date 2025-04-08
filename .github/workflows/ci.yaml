@@ -46,8 +46,8 @@ jobs:
 
       - name: Generate Container image checksum file for SLSA attestation
         run: |
-          echo "c6609b90d447055b882c84b52b92550a5b1acd0da5a37013ad843ad5f19ebe56  ghcr.io/chainloop-dev/platform/backend" > container-images-checksum.txt
-          echo "a1059770d1a86431325543de988a7cd8420f5a9b3ccb9ec285ab4ffb3e2b9707  ghcr.io/chainloop-dev/platform/backend" >> container-images-checksum.txt
+          echo "c6609b90d447055b882c84b52b92550a5b1acd0da5a37013ad843ad5f19ebe56  ghcr.io/chainloop-dev/platform/backend:arm64" > container-images-checksum.txt
+          echo "a1059770d1a86431325543de988a7cd8420f5a9b3ccb9ec285ab4ffb3e2b9707  ghcr.io/chainloop-dev/platform/backend:amd64" >> container-images-checksum.txt
           echo "0721a5cfc888f77384c50316859461bd3eef4778364689fbfce90615a47bb56a  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
           echo "792b3b345a72d66e3e32621ec96806ffd590434ee65c531e63159ff734f196d8  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
 

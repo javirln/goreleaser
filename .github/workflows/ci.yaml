@@ -33,12 +33,11 @@ jobs:
 
       - name: Attest
         uses: actions/attest-build-provenance@v2
-        output:
-           bundle-path: /tmp/slsa-attestation.json
+        id: slsa-attest
         with:
           subject-checksums: sha256.txt
           push-to-registry: false
 
       - name: Cat attestation
         run: |
-          cat /tmp/slsa-attestation.json
+          cat {{ steps.slsa-attest.outputs.bundle-path }}

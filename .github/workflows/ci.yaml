@@ -40,4 +40,4 @@ jobs:
 
       - name: Cat attestation
         run: |
-          cat {{ steps.slsa-attest.outputs.bundle-path }}
+          cat ${{ steps.slsa-attest.outputs.bundle-path }}

@@ -47,7 +47,7 @@ jobs:
           done
 
 
-      - uses: actions/attest-build-provenance@619dbb2e03e0189af0c55118e7d3c5e129e99726
+      - uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2
         with:
           subject-checksums: subjects-checksum.txt
 

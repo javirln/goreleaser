@@ -1,0 +1,8 @@
+ef85baa868ff9d0c43e2fed582a606961d57f3f34c4cb1f2f40148b88a9088e6  chainloop-cli-1.0.0-rc.2-SNAPSHOT-f2a05048-darwin-amd64.tar.gz
+f7d6883c2c5d4336745ada4e29c918a691abdd490bac964ab4281c66ef19f1f7  chainloop-cli-1.0.0-rc.2-SNAPSHOT-f2a05048-darwin-arm64.tar.gz
+ad224e8d1b0aa23c0ba3020e8ec085c289d3848658eb2b2b409f01e9ddde999f  chainloop-cli-1.0.0-rc.2-SNAPSHOT-f2a05048-linux-amd64.tar.gz
+cfb1ed5ec08725f40957c7bb7fadd2c098904d5c31b13b1855c9e1988725fe8a  chainloop-cli-1.0.0-rc.2-SNAPSHOT-f2a05048-linux-arm64.tar.gz
+050fed0589a73c06fc2c868c81ead4526f1d46dd95f4833702a19d7687ceff52  chainloop-darwin-amd64
+3fe1217d0f3e130fed37b100d4c0e93164d661f04c97d138ed2a97e00b473db2  chainloop-darwin-arm64
+30bbf64e7e8652ec595d79f42825ecfd67cad8a128073b0df67a432deb5372ad  chainloop-linux-amd64
+49c35c45be38cd936b57990fc440f502d49be2c80048ab901eaa48f2178d237d  chainloop-linux-arm64

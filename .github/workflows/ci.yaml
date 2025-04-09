@@ -27,35 +27,30 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create checksum file
-        run: |
-          echo "8881c1a89650c9fa9d06fee4ff6fb898cf931c4255663ce801d4474549a60fc1  index.docker.io/bitnami/wordpress" > sha256.txt
-          echo "b35cac45090f87b8be132aa2aaa02db65c498a85b79a420f261d0a502792bc04  index.docker.io/bitnami/nats" >> sha256.txt
-
-      - name: Attest
-        uses: actions/attest-build-provenance@v2
-        id: slsa-attest
-        with:
-          subject-checksums: sha256.txt
-          push-to-registry: false
-
-      - name: Cat attestation
-        run: |
-          cat ${{ steps.slsa-attest.outputs.bundle-path }}
-
 
       - name: Generate Container image checksum file for SLSA attestation
         run: |
-          echo "c6609b90d447055b882c84b52b92550a5b1acd0da5a37013ad843ad5f19ebe56  ghcr.io/chainloop-dev/platform/backend:arm64" > container-images-checksum.txt
-          echo "a1059770d1a86431325543de988a7cd8420f5a9b3ccb9ec285ab4ffb3e2b9707  ghcr.io/chainloop-dev/platform/backend:amd64" >> container-images-checksum.txt
-          echo "0721a5cfc888f77384c50316859461bd3eef4778364689fbfce90615a47bb56a  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
-          echo "792b3b345a72d66e3e32621ec96806ffd590434ee65c531e63159ff734f196d8  ghcr.io/chainloop-dev/platform/backend-migrations" >> container-images-checksum.txt
+          checksum_file="subjects-checksum.txt"
+          touch "$checksum_file"
+
+          # First the binaries
+          binaries=$(cat dist/artifacts.json | jq -r '.[] | select(.type=="Binary") | select(.name=="chainloop"| not) | "\(.path) \(.name)"')
+          echo "$binaries" | while IFS= read -r entry; do
+            # Extract the path and name from the entry
+            path=$(echo "$entry" | awk '{print $1}')
+            # Calculate the checksum of the file
+            checksum=$(sha256sum "$path" | awk '{print $1}')
+            # Get the name from the entry
+            name=$(echo "$entry" | awk '{print $2}')
+            # Add it to the checksum file
+            echo "$checksum  $name" >> $checksum_file
+          done
 
 
       - uses: actions/attest-build-provenance@v2
         with:
-          subject-checksums: container-images-checksum.txt
+          subject-checksums: subjects-checksum.txt
 
       - name: Cat checksum
         run: |
-          cat container-images-checksum.txt
+          cat subjects-checksum.txt

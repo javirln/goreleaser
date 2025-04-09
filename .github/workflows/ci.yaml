@@ -43,7 +43,7 @@ jobs:
             # Get the name from the entry
             name=$(echo "$entry" | awk '{print $2}')
             # Add it to the checksum file
-            echo "$checksum  $name" >> $checksum_file
+            echo "$checksum *$name" >> $checksum_file
           done
 
 

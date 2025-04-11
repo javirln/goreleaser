@@ -16,6 +16,7 @@ jobs:
       REGISTRY: ghcr.io
       IMAGE_NAME: ghcr.io/chainloop-dev/platform/backend
       MIGRATION_IMAGE_NAME: ghcr.io/chainloop-dev/platform/backend-migrations
+      CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
 
     steps:
       - name: Checkout

@@ -28,6 +28,20 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
 
+      - name: Install Chainloop
+        run: |
+          curl -sfL https://docs.chainloop.dev/install.sh | bash -s
+  
+      - name: Initialize Attestation
+        id: init_attestation
+        run: |
+          attestation_id=$(chainloop attestation init --workflow ${CHAINLOOP_WORKFLOW_NAME} --project ${CHAINLOOP_PROJECT_NAME} --release --remote-state -o json | jq -r .attestationID)
+          echo "attestation_id=$attestation_id" >> $GITHUB_OUTPUT
+        env:
+          CHAINLOOP_TOKEN: ${{ secrets.CHAINLOOP_TOKEN }}
+          CHAINLOOP_WORKFLOW_NAME: "goreleaser"
+          CHAINLOOP_PROJECT_NAME: "core"
+
       - name: Generate Container image checksum file for SLSA attestation
         run: |
           checksum_file="subjects-checksum.txt"
@@ -48,9 +62,18 @@ jobs:
 
 
       - uses: actions/attest-build-provenance@c074443f1aee8d4aeeae555aebba3282517141b2
+        id: slsa-attest
         with:
           subject-checksums: subjects-checksum.txt
 
-      - name: Cat checksum
+      - name: Attest SLSA attestation
         run: |
-          cat subjects-checksum.txt
+          chainloop attestation --name slsa-attestation add --value ${{ steps.slsa-attest.outputs.bundle-path }} --annotation github-attestation="${{ steps.slsa-attest.outputs.attestation-url }}"--kind SLSA_PROVENANCE --attestation-id ${{ steps.init_attestation.outputs.attestation_id }}
+
+
+      - name: Finish and Record Attestation
+        id: attestation_push
+        if: ${{ success() }}
+        run: |
+          chainloop attestation push --attestation-id ${{ steps.init_attestation.outputs.attestation_id }}
+          attestation_sha=$(chainloop wf run describe --id ${{ steps.init_attestation.outputs.attestation_id }} -o json | jq -r '.attestation.digest')
